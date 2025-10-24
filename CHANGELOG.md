@@ -5,6 +5,31 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.3] - 2025-10-24
+
+### Hinzugefügt
+- 🗑️ **Deinstallations-Script** (`uninstall.sh`)
+  - Entfernt Symlink `/usr/local/bin/raspbian-autoupdater`
+  - Entfernt alle Cronjobs (root und Benutzer)
+  - Prüft und entfernt Systemd Timer
+  - Optional: Löscht Log-Verzeichnis nach Rückfrage
+  - Interaktive Bestätigungen für alle Aktionen
+
+### Behoben
+- 🐛 **Paket-Erkennung für deutsche apt-Ausgabe**
+  - Parser unterstützt nun "Die folgenden Pakete werden aktualisiert" Format
+  - Extrahiert Paketnamen aus deutscher und englischer apt-Ausgabe
+  - Sammelt Versionsinformationen aus "Entpacken von" Zeilen
+  - Zeigt korrekte Anzahl aktualisierter Pakete in Zusammenfassung
+- 🎨 **Einheitliche Formatierung der Paketliste**
+  - Paketliste wird nun mit `print_status()` ausgegeben
+  - Keine seitliche Versetzung mehr in der Ausgabe
+  - Konsistente Farbgebung (blau) für alle Paketeinträge
+  - Automatisches Logging aller Paketausgaben
+
+### Verbessert
+- 📝 **Dokumentation** in README.md um Deinstallation erweitert
+
 ## [1.0.2] - 2025-10-24
 
 ### Hinzugefügt
