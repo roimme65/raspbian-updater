@@ -5,6 +5,29 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.1] - 2025-10-24
+
+### Hinzugefügt
+- 📁 **Releases-Verzeichnis** mit strukturierten Release Notes
+- 🛡️ **Umfassende SECURITY.md** mit Sicherheitsrichtlinien
+- 🔗 **GitHub Badges** in README (License, Python Version, Release)
+- 📚 **Verbesserte Dokumentation** mit besserer Struktur
+- 🤝 **Contribution Guidelines** in README
+- 🔗 **Nützliche Links** zu Repository, Issues, Releases
+
+### Geändert
+- ✨ **README komplett überarbeitet** mit Emojis und besserer Struktur
+- 📖 **Feature-Beschreibungen** deutlich erweitert
+- 🔧 **Installationspfade** korrigiert und vereinheitlicht
+- 📊 **Paket-Liste Display** in Dokumentation hervorgehoben
+- 🎨 **Markdown-Formatierung** verbessert
+
+### Verbessert
+- 🔒 **Sicherheitsrichtlinien** detailliert dokumentiert
+- 📝 **Beispiel-Ausgaben** aktualisiert und erweitert
+- 🛠️ **Systemd Service Beispiele** mit korrekten Pfaden
+- 📦 **JSON-Log Struktur** vollständig dokumentiert
+
 ## [1.0.0] - 2025-10-24
 
 ### Hinzugefügt
@@ -70,4 +93,5 @@ sudo ./manage_cronjobs.sh
 - MIT License hinzugefügt
 - Open Source und frei verwendbar
 
+[1.0.1]: https://github.com/roimme65/raspbian-updater/releases/tag/v1.0.1
 [1.0.0]: https://github.com/roimme65/raspbian-updater/releases/tag/v1.0.0
