@@ -11,6 +11,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 - 📁 **Releases-Verzeichnis** mit strukturierten Release Notes
 - 🛡️ **Umfassende SECURITY.md** mit Sicherheitsrichtlinien
 - 🔗 **GitHub Badges** in README (License, Python Version, Release)
+- 🏷️ **Statische Badges** für bessere Kompatibilität
 - 📚 **Verbesserte Dokumentation** mit besserer Struktur
 - 🤝 **Contribution Guidelines** in README
 - 🔗 **Nützliche Links** zu Repository, Issues, Releases
