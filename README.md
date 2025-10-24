@@ -1,34 +1,75 @@
 # Raspbian Trixie Auto-Updater
 
-Ein Python-basierter Auto-Updater für Raspbian/Debian Trixie mit detaillierter Statusanzeige und Logging-Funktionalität.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Release](https://img.shields.io/github/v/release/roimme65/raspbian-updater)](https://github.com/roimme65/raspbian-updater/releases)
 
-## Features
+Ein vollständiger Python-basierter Auto-Updater für Raspbian/Debian Trixie mit detaillierter Statusanzeige, Logging und Cronjob-Verwaltung.
 
-- ✅ Vollautomatische System-Updates
-- 📊 Echtzeit-Statusanzeige mit Farbcodierung
+## 🌟 Features
+
+### 🔄 Automatisches Update-System
+- ✅ Vollautomatische System-Updates mit einem Befehl
+- � Kompletter Update-Zyklus: `update` → `upgrade` → `dist-upgrade` → `autoremove` → `autoclean`
+- ⚡ Quick-Modus für schnelle Updates (ohne dist-upgrade)
+- 🧪 Dry-Run Modus zum sicheren Testen
+
+### �📊 Statusanzeige & Logging
+- 🎨 Echtzeit-Statusanzeige mit ANSI-Farbcodierung
 - 📝 Detailliertes Logging (Text + JSON)
-- ⏱️ Zeitmessung für jeden Schritt
-- 🔒 Root-Rechte-Prüfung
-- 🧪 Dry-Run Modus zum Testen
-- ⚡ Schnellmodus für schnelle Updates
-- 🔄 Automatische Neustart-Erkennung
+- ⏱️ Zeitmessung für jeden einzelnen Schritt
+- � **Paket-Liste mit Versionsnummern** in der Update-Zusammenfassung
+- 💾 Strukturierte JSON-Logs für automatisierte Auswertung
 
-## Installation
+### 🛠️ Cronjob-Verwaltung
+- 📅 Interaktives Verwaltungsmenü (`manage_cronjobs.sh`)
+- 👀 Anzeige aktueller Cronjobs mit Zeitplan-Interpretation
+- 📋 Fertige Vorlagen für häufige Zeitpläne
+- 📊 Log-Anzeige mit Zusammenfassungen
+- 📖 Cron-Syntax Hilfe
+
+### 🔒 Sicherheit & Zuverlässigkeit
+- 🔐 Root-Rechte-Prüfung
+- 🔄 Automatische Neustart-Erkennung
+- 🛡️ Saubere Fehlerbehandlung
+- ⌨️ STRG+C Interrupt-Unterstützung
+- 🔢 Exit-Codes für Automatisierung
+
+## 📦 Installation
+
+### Schnellinstallation
 
 ```bash
-# Repository klonen oder Datei herunterladen
-cd /media/imme/ENCRYPTSSD/daten/git/github/tools-skripte/raspbian-updater
+# Repository klonen
+git clone https://github.com/roimme65/raspbian-updater.git
+cd raspbian-updater
 
-# Ausführbar machen
-chmod +x raspbian_autoupdater.py
+# Installation mit automatischer Einrichtung
+sudo ./install.sh
 ```
 
-## Verwendung
+Das Installations-Script:
+- ✅ Setzt Ausführungsrechte
+- ✅ Erstellt Log-Verzeichnis (`/var/log/raspbian-updater/`)
+- ✅ Erstellt Symlink (`/usr/local/bin/raspbian-autoupdater`)
+- ✅ Bietet optionale Cronjob-Einrichtung an
+
+### Manuelle Installation
+
+```bash
+# Ausführbar machen
+chmod +x raspbian_autoupdater.py
+
+# Optional: Symlink erstellen
+sudo ln -s "$(pwd)/raspbian_autoupdater.py" /usr/local/bin/raspbian-autoupdater
+```
+
+## 🚀 Verwendung
 
 ### Vollständiges Update
 
 ```bash
-sudo ./raspbian_autoupdater.py
+sudo raspbian-autoupdater
 ```
 
 Dies führt aus:
@@ -43,7 +84,7 @@ Dies führt aus:
 Für schnelle Updates ohne dist-upgrade:
 
 ```bash
-sudo ./raspbian_autoupdater.py --quick
+sudo raspbian-autoupdater --quick
 ```
 
 ### Dry-Run Modus
@@ -51,16 +92,29 @@ sudo ./raspbian_autoupdater.py --quick
 Um zu sehen, was ausgeführt würde ohne Änderungen vorzunehmen:
 
 ```bash
-./raspbian_autoupdater.py --dry-run
+raspbian-autoupdater --dry-run
 ```
 
 ### Benutzerdefiniertes Log-Verzeichnis
 
 ```bash
-sudo ./raspbian_autoupdater.py --log-dir /home/pi/update-logs
+sudo raspbian-autoupdater --log-dir /custom/path/logs
 ```
 
-## Ausgabe
+### Cronjob-Verwaltung
+
+```bash
+# Interaktives Menü
+sudo ./manage_cronjobs.sh
+
+# Schnellzugriff: Zeige Cronjobs
+./manage_cronjobs.sh --show
+
+# Schnellzugriff: Zeige Logs
+./manage_cronjobs.sh --logs
+```
+
+## 📋 Ausgabe
 
 Das Skript zeigt während der Ausführung:
 
@@ -106,6 +160,11 @@ Beispiel JSON-Struktur:
   "start_time": "2025-10-24T10:15:30.123456",
   "end_time": "2025-10-24T10:25:45.654321",
   "duration_seconds": 615.53,
+  "upgraded_packages": [
+    "python3-pip 23.0.1+dfsg-1 → 24.0+dfsg-1",
+    "nginx 1.24.0-2 → 1.24.0-3"
+  ],
+  "package_count": 23,
   "steps": [
     {
       "step": "APT Update - Paketlisten aktualisieren",
@@ -119,7 +178,7 @@ Beispiel JSON-Struktur:
 }
 ```
 
-## Automatisierung mit Cron
+## ⏰ Automatisierung mit Cron
 
 Um das Skript automatisch auszuführen, fügen Sie es zu crontab hinzu:
 
@@ -157,7 +216,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/media/imme/ENCRYPTSSD/daten/git/github/tools-skripte/raspbian-updater/raspbian_autoupdater.py
+ExecStart=/usr/local/bin/raspbian-autoupdater
 StandardOutput=journal
 StandardError=journal
 
@@ -195,33 +254,80 @@ sudo systemctl start raspbian-autoupdate.timer
 sudo systemctl status raspbian-autoupdate.timer
 ```
 
-## Neustart-Erkennung
+## 📊 Update-Zusammenfassung
+
+Nach jedem Update erhalten Sie eine detaillierte Zusammenfassung mit:
+- ⏱️ Gesamtdauer des Updates
+- 📦 **Liste aller aktualisierten Pakete mit Versionsnummern**
+- 🔄 Neustart-Benachrichtigung (falls erforderlich)
+- 📝 Pfad zur Log-Datei
+
+Beispiel:
+```
+======================================================================
+                    Update-Zusammenfassung
+======================================================================
+
+2025-10-24 10:25:45 Gesamtdauer: 615.53 Sekunden (10.26 Minuten)
+
+📦 Aktualisierte Pakete (23):
+    1. python3-pip 23.0.1+dfsg-1 → 24.0+dfsg-1
+    2. nginx 1.24.0-2 → 1.24.0-3
+    3. openssh-server 1:9.6p1-3 → 1:9.7p1-1
+    ...
+
+✓ Kein Neustart erforderlich.
+```
+
+## 🔒 Sicherheit
 
 Das Skript prüft automatisch, ob ein Neustart erforderlich ist (z.B. nach Kernel-Updates) und zeigt eine entsprechende Warnung an.
 
-## Fehlerbehandlung
+Siehe [SECURITY.md](SECURITY.md) für Details zur Sicherheitsrichtlinie.
+
+## 🛠️ Fehlerbehandlung
 
 - Bei Fehlern werden Details geloggt
 - Exit-Codes geben Auskunft über Erfolg/Misserfolg
 - STRG+C Abbruch wird sauber behandelt
+- JSON-Logs enthalten Fehlerdetails
 
-## Kompatibilität
+## 📋 Systemanforderungen
 
-- Raspbian Trixie (Debian 13)
-- Debian Trixie
-- Python 3.9+
-- Erfordert Root-Rechte (außer im Dry-Run Modus)
+### Kompatibilität
+- ✅ Raspbian Trixie (Debian 13)
+- ✅ Debian Trixie
+- ✅ Python 3.9+
+- ⚠️ Erfordert Root-Rechte (außer im Dry-Run Modus)
 
-## Anforderungen
-
+### Anforderungen
 - Python 3 (Standard auf Raspbian)
 - Root-Zugriff für System-Updates
 - Keine externen Python-Bibliotheken erforderlich (nur Standard-Library)
 
-## Lizenz
+## 🤝 Beitragen
 
-Open Source - Frei verwendbar
+Feedback, Bug-Reports und Pull Requests sind willkommen!
 
-## Autor
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/roimme65/raspbian-updater/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/roimme65/raspbian-updater/discussions)
+- 🔀 **Pull Requests**: Gerne Verbesserungen einreichen
 
-Auto-generiert für Raspbian Trixie System-Wartung
+## 📝 Changelog
+
+Siehe [CHANGELOG.md](CHANGELOG.md) für alle Versionsänderungen.
+
+## 📄 Lizenz
+
+Dieses Projekt ist unter der [MIT License](LICENSE) lizenziert - frei verwendbar für private und kommerzielle Zwecke.
+
+## 👤 Autor
+
+Entwickelt von [roimme65](https://github.com/roimme65) für Raspbian Trixie System-Wartung.
+
+## 🔗 Links
+
+- **Repository**: https://github.com/roimme65/raspbian-updater
+- **Issues**: https://github.com/roimme65/raspbian-updater/issues
+- **Releases**: https://github.com/roimme65/raspbian-updater/releases
+- **Security**: [SECURITY.md](SECURITY.md)
