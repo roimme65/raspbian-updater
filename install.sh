@@ -1,0 +1,103 @@
+#!/bin/bash
+# Installation Script für Raspbian Auto-Updater
+
+set -e
+
+echo "========================================"
+echo "Raspbian Auto-Updater - Installation"
+echo "========================================"
+echo ""
+
+# Prüfe Root-Rechte
+if [ "$EUID" -ne 0 ]; then 
+    echo "⚠️  Bitte als Root ausführen (sudo ./install.sh)"
+    exit 1
+fi
+
+# Aktuelles Verzeichnis
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+UPDATER_SCRIPT="$SCRIPT_DIR/raspbian_autoupdater.py"
+
+echo "📍 Installationsverzeichnis: $SCRIPT_DIR"
+
+# Prüfe ob Skript existiert
+if [ ! -f "$UPDATER_SCRIPT" ]; then
+    echo "❌ Fehler: raspbian_autoupdater.py nicht gefunden!"
+    exit 1
+fi
+
+# Mache Skript ausführbar
+echo "🔧 Setze Ausführungsrechte..."
+chmod +x "$UPDATER_SCRIPT"
+
+# Erstelle Log-Verzeichnis
+echo "📁 Erstelle Log-Verzeichnis..."
+mkdir -p /var/log/raspbian-updater
+chmod 755 /var/log/raspbian-updater
+
+# Erstelle Symlink in /usr/local/bin
+echo "🔗 Erstelle Symlink..."
+ln -sf "$UPDATER_SCRIPT" /usr/local/bin/raspbian-autoupdater
+
+# Teste das Skript
+echo ""
+echo "🧪 Teste Installation (Dry-Run)..."
+"$UPDATER_SCRIPT" --dry-run
+
+echo ""
+echo "✅ Installation erfolgreich!"
+echo ""
+echo "Verwendung:"
+echo "  sudo raspbian-autoupdater              # Vollständiges Update"
+echo "  sudo raspbian-autoupdater --quick      # Schnelles Update"
+echo "  raspbian-autoupdater --dry-run         # Test-Modus"
+echo ""
+echo "Logs werden gespeichert in: /var/log/raspbian-updater/"
+echo ""
+
+# Frage nach Cron-Job Installation
+read -p "Möchten Sie einen automatischen Cron-Job einrichten? (j/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Jj]$ ]]; then
+    echo ""
+    echo "Wählen Sie die Häufigkeit:"
+    echo "1) Täglich um 3:00 Uhr"
+    echo "2) Sonntags um 2:00 Uhr"
+    echo "3) Täglich um 3:00 Uhr (vollständig) + 6:00 Uhr (schnell)"
+    echo "4) Benutzerdefiniert"
+    read -p "Auswahl (1-4): " -n 1 -r CRON_CHOICE
+    echo
+    
+    CRON_LINE=""
+    case $CRON_CHOICE in
+        1)
+            CRON_LINE="0 3 * * * /usr/local/bin/raspbian-autoupdater"
+            ;;
+        2)
+            CRON_LINE="0 2 * * 0 /usr/local/bin/raspbian-autoupdater"
+            ;;
+        3)
+            CRON_LINE="0 3 * * * /usr/local/bin/raspbian-autoupdater\n0 6 * * * /usr/local/bin/raspbian-autoupdater --quick"
+            ;;
+        4)
+            echo "Bitte Cron-Syntax eingeben (z.B. '0 3 * * *' für täglich um 3:00):"
+            read -r CRON_TIME
+            CRON_LINE="$CRON_TIME /usr/local/bin/raspbian-autoupdater"
+            ;;
+        *)
+            echo "Ungültige Auswahl. Überspringe Cron-Installation."
+            ;;
+    esac
+    
+    if [ -n "$CRON_LINE" ]; then
+        # Füge Cron-Job hinzu
+        (crontab -l 2>/dev/null | grep -v raspbian-autoupdater; echo -e "$CRON_LINE") | crontab -
+        echo "✅ Cron-Job wurde eingerichtet!"
+        echo ""
+        echo "Aktuelle Cron-Jobs:"
+        crontab -l | grep raspbian-autoupdater
+    fi
+fi
+
+echo ""
+echo "🎉 Installation abgeschlossen!"
