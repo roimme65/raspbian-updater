@@ -11,15 +11,15 @@ Ein vollständiger Python-basierter Auto-Updater für Raspbian/Debian Trixie mit
 
 ### 🔄 Automatisches Update-System
 - ✅ Vollautomatische System-Updates mit einem Befehl
-- � Kompletter Update-Zyklus: `update` → `upgrade` → `dist-upgrade` → `autoremove` → `autoclean`
+- 🔁 Kompletter Update-Zyklus: `update` → `upgrade` → `dist-upgrade` → `autoremove` → `autoclean`
 - ⚡ Quick-Modus für schnelle Updates (ohne dist-upgrade)
 - 🧪 Dry-Run Modus zum sicheren Testen
 
-### �📊 Statusanzeige & Logging
+### 📊 Statusanzeige & Logging
 - 🎨 Echtzeit-Statusanzeige mit ANSI-Farbcodierung
 - 📝 Detailliertes Logging (Text + JSON)
 - ⏱️ Zeitmessung für jeden einzelnen Schritt
-- � **Paket-Liste mit Versionsnummern** in der Update-Zusammenfassung
+- 📦 **Paket-Liste mit Versionsnummern** in der Update-Zusammenfassung
 - 💾 Strukturierte JSON-Logs für automatisierte Auswertung
 
 ### 🛠️ Cronjob-Verwaltung
