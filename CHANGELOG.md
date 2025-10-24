@@ -5,6 +5,25 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.2] - 2025-10-24
+
+### Hinzugefügt
+- 📋 **GitHub Issue Templates** angepasst für Raspbian Auto-Updater
+  - Bug Report Template auf Deutsch mit relevanten Feldern
+  - Feature Request Template auf Deutsch mit Komponenten-Auswahl
+- 💬 **GitHub Discussions Template** auf Deutsch erstellt
+  - Willkommensnachricht mit Community-Richtlinien
+  - Kategorien für Q&A, Ideen, Show & Tell
+  - Starter-Fragen für neue Mitglieder
+- 🏷️ **Labels** für Issue Templates (bug, enhancement)
+- 📝 **Titel-Präfixe** für bessere Übersicht ([BUG], [FEATURE])
+
+### Verbessert
+- 🇩🇪 **Deutsche Sprache** in allen Community-Templates
+- 📊 **Strukturierte Formulare** für Bug Reports und Feature Requests
+- 🎯 **Raspbian-spezifische Felder** (Hardware, OS, Cronjobs, Logs)
+- 🤝 **Mitarbeits-Optionen** in Feature Requests
+
 ## [1.0.1] - 2025-10-24
 
 ### Hinzugefügt
@@ -94,5 +113,6 @@ sudo ./manage_cronjobs.sh
 - MIT License hinzugefügt
 - Open Source und frei verwendbar
 
+[1.0.2]: https://github.com/roimme65/raspbian-updater/releases/tag/v1.0.2
 [1.0.1]: https://github.com/roimme65/raspbian-updater/releases/tag/v1.0.1
 [1.0.0]: https://github.com/roimme65/raspbian-updater/releases/tag/v1.0.0
