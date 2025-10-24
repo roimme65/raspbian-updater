@@ -235,37 +235,69 @@ class RaspbianAutoUpdater:
             return packages
         
         lines = output.split('\n')
+        in_upgrade_section = False
+        
         for line in lines:
-            # Suche nach Zeilen wie "Inst paketname [alte-version] (neue-version ...)"
-            if line.strip().startswith('Inst '):
-                parts = line.split()
-                if len(parts) >= 2:
-                    package_name = parts[1]
-                    
-                    # Versuche Version zu extrahieren
-                    version_info = ""
-                    if '[' in line and ']' in line and '(' in line:
-                        # Format: Inst paket [alte] (neue ...)
-                        old_ver = line[line.find('[')+1:line.find(']')]
-                        new_ver_start = line.find('(') + 1
-                        new_ver_end = line.find(' ', new_ver_start)
-                        if new_ver_end == -1:
-                            new_ver_end = line.find(')', new_ver_start)
-                        new_ver = line[new_ver_start:new_ver_end]
-                        version_info = f"{old_ver} → {new_ver}"
-                    elif '(' in line:
-                        # Format: Inst paket (version ...)
-                        new_ver_start = line.find('(') + 1
-                        new_ver_end = line.find(' ', new_ver_start)
-                        if new_ver_end == -1:
-                            new_ver_end = line.find(')', new_ver_start)
-                        new_ver = line[new_ver_start:new_ver_end]
-                        version_info = f"(neu: {new_ver})"
-                    
-                    if version_info:
-                        packages.append(f"{package_name} {version_info}")
-                    else:
-                        packages.append(package_name)
+            # Erkenne "Die folgenden Pakete werden aktualisiert" Sektion
+            if 'Die folgenden Pakete werden aktualisiert' in line or 'The following packages will be upgraded' in line:
+                in_upgrade_section = True
+                continue
+            
+            # Ende der Upgrade-Sektion
+            if in_upgrade_section and ('aktualisiert,' in line or 'upgraded,' in line):
+                in_upgrade_section = False
+                continue
+            
+            # Sammle Pakete aus der Upgrade-Sektion
+            if in_upgrade_section:
+                # Pakete sind durch Leerzeichen getrennt
+                pkg_line = line.strip()
+                if pkg_line and not pkg_line.startswith('#'):
+                    # Entferne führende/nachfolgende Leerzeichen und split
+                    pkg_names = pkg_line.split()
+                    packages.extend(pkg_names)
+            
+            # Alternative: Parse "Entpacken" Zeilen für Versionen
+            if 'Entpacken von' in line or 'Unpacking' in line:
+                # Format: "Entpacken von paket:arch (neue-version) über (alte-version) ..."
+                try:
+                    if '(' in line and ')' in line:
+                        # Extrahiere Paketnamen
+                        parts = line.split()
+                        for i, part in enumerate(parts):
+                            if part == 'von' or part == 'of':
+                                if i + 1 < len(parts):
+                                    pkg_with_arch = parts[i + 1]
+                                    # Entferne :arch Suffix
+                                    pkg_name = pkg_with_arch.split(':')[0]
+                                    
+                                    # Extrahiere Versionen
+                                    version_match = line[line.find('('):]
+                                    if 'über' in version_match or 'over' in version_match:
+                                        # Format: (neue) über (alte)
+                                        new_start = version_match.find('(') + 1
+                                        new_end = version_match.find(')')
+                                        new_ver = version_match[new_start:new_end]
+                                        
+                                        rest = version_match[new_end+1:]
+                                        if '(' in rest and ')' in rest:
+                                            old_start = rest.find('(') + 1
+                                            old_end = rest.find(')')
+                                            old_ver = rest[old_start:old_end]
+                                            
+                                            version_info = f"{pkg_name} {old_ver} → {new_ver}"
+                                            # Nur hinzufügen wenn noch nicht vorhanden
+                                            if not any(pkg_name in p for p in packages):
+                                                packages.append(version_info)
+                                            else:
+                                                # Ersetze einfachen Namen mit Version
+                                                packages = [version_info if p == pkg_name else p for p in packages]
+                                    break
+                except:
+                    pass
+        
+        # Entferne Duplikate und leere Einträge
+        packages = list(dict.fromkeys([p for p in packages if p]))
         
         return packages
     
@@ -438,10 +470,7 @@ class RaspbianAutoUpdater:
                 color=Color.OKCYAN
             )
             for i, package in enumerate(self.upgraded_packages, 1):
-                print(f"  {i:3d}. {package}")
-                if self.log_file:
-                    with open(self.log_file, 'a') as f:
-                        f.write(f"  {i:3d}. {package}\n")
+                self.print_status(f"  {i:3d}. {package}", color=Color.OKBLUE)
         else:
             self.print_status(
                 "✓ Keine Pakete wurden aktualisiert (System ist auf dem neuesten Stand)",
