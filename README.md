@@ -351,3 +351,4 @@ Entwickelt von [roimme65](https://github.com/roimme65) für Raspbian Trixie Syst
 - **Issues**: https://github.com/roimme65/raspbian-updater/issues
 - **Releases**: https://github.com/roimme65/raspbian-updater/releases
 - **Security**: [SECURITY.md](SECURITY.md)
+
