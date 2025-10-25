@@ -5,6 +5,32 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.4] - 2025-10-25
+
+### Hinzugefügt
+- 🔔 **Desktop-Benachrichtigungen** via notify-send
+  - Kritische Warnung (rot) bei erforderlichem Neustart
+  - Erfolgs-Benachrichtigung (grün) nach Updates
+  - Info-Benachrichtigung (blau) wenn keine Updates verfügbar
+  - Automatische Erkennung von DISPLAY und DBUS_SESSION_BUS_ADDRESS
+  - Funktioniert mit sudo und in Cronjobs
+  - Benachrichtigt alle aktiven GUI-Sessions
+- 📦 **Automatische Installation** von Desktop-Benachrichtigungs-Tools
+  - libnotify-bin wird in install.sh installiert
+  - notification-daemon wird in install.sh installiert
+  - Hinweis für Benutzer über GUI-Funktionalität
+
+### Behoben
+- 🐛 **Seitlicher Versatz in apt-Ausgabe**
+  - apt-get verwendet nun -q (quiet) Option
+  - DEBIAN_FRONTEND=noninteractive für alle apt-Befehle
+  - -o Dpkg::Use-Pty=0 unterdrückt dpkg-Fortschrittsanzeige
+  - Saubere, lineare Ausgabe ohne Versatz
+
+### Verbessert
+- 📝 **Dokumentation** um Desktop-Benachrichtigungen erweitert
+- 🔧 **Robustheit** bei fehlenden GUI-Komponenten
+
 ## [1.0.3] - 2025-10-24
 
 ### Hinzugefügt

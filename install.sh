@@ -30,6 +30,27 @@ fi
 echo "🔧 Setze Ausführungsrechte..."
 chmod +x "$UPDATER_SCRIPT"
 
+# Installiere libnotify-bin für Desktop-Benachrichtigungen
+echo "📦 Installiere Desktop-Benachrichtigungs-Tools..."
+if ! dpkg -l | grep -q "^ii  libnotify-bin"; then
+    apt-get update -qq
+    apt-get install -y -qq libnotify-bin
+    echo "✓ libnotify-bin installiert"
+else
+    echo "✓ libnotify-bin bereits installiert"
+fi
+
+# Installiere notification-daemon für Raspberry Pi Desktop
+if ! dpkg -l | grep -q "^ii  notification-daemon"; then
+    apt-get install -y -qq notification-daemon
+    echo "✓ notification-daemon installiert"
+else
+    echo "✓ notification-daemon bereits installiert"
+fi
+
+echo "ℹ️  Hinweis: Desktop-Benachrichtigungen funktionieren nur in GUI-Sessions"
+echo "   Falls Sie die grafische Oberfläche verwenden, werden Sie über Updates informiert."
+
 # Erstelle Log-Verzeichnis
 echo "📁 Erstelle Log-Verzeichnis..."
 mkdir -p /var/log/raspbian-updater

@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-1.0.3-green.svg)](https://github.com/roimme65/raspbian-updater/releases)
+[![Version](https://img.shields.io/badge/version-1.0.4-green.svg)](https://github.com/roimme65/raspbian-updater/releases)
 [![Platform](https://img.shields.io/badge/platform-Raspbian%20Trixie-red.svg)](https://www.raspberrypi.com/)
 
 Ein vollständiger Python-basierter Auto-Updater für Raspbian/Debian Trixie mit detaillierter Statusanzeige, Logging und Cronjob-Verwaltung.
@@ -35,6 +35,13 @@ Ein vollständiger Python-basierter Auto-Updater für Raspbian/Debian Trixie mit
 - 🛡️ Saubere Fehlerbehandlung
 - ⌨️ STRG+C Interrupt-Unterstützung
 - 🔢 Exit-Codes für Automatisierung
+
+### 🔔 Desktop-Benachrichtigungen
+- 🔴 **Kritische Warnung** bei erforderlichem Neustart
+- 🟢 **Erfolgs-Meldung** nach Updates
+- 🔵 **Info** wenn keine Updates verfügbar
+- 📱 Funktioniert auch bei Cronjob-Ausführung
+- 🎯 Automatische Erkennung von GUI-Sessions
 
 ## 📦 Installation
 

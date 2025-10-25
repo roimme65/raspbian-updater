@@ -402,6 +402,105 @@ class RaspbianAutoUpdater:
         reboot_required_file = "/var/run/reboot-required"
         return os.path.exists(reboot_required_file)
     
+    def send_desktop_notification(self, title: str, message: str, urgency: str = "normal"):
+        """
+        Sendet eine Desktop-Benachrichtigung via notify-send
+        
+        Args:
+            title: Titel der Benachrichtigung
+            message: Nachrichtentext
+            urgency: Dringlichkeit (low, normal, critical)
+        """
+        # Prüfe ob notify-send verfügbar ist
+        try:
+            subprocess.run(["which", "notify-send"], 
+                          capture_output=True, 
+                          check=True)
+        except subprocess.CalledProcessError:
+            # notify-send nicht installiert
+            return
+        
+        # Bestimme Icon basierend auf Dringlichkeit
+        if urgency == "critical":
+            icon = "dialog-warning"
+        elif urgency == "low":
+            icon = "dialog-information"
+        else:
+            icon = "system-software-update"
+        
+        try:
+            # Versuche als aktueller Benutzer (wenn sudo benutzt wurde)
+            sudo_user = os.environ.get('SUDO_USER')
+            
+            if sudo_user:
+                # Script wurde mit sudo ausgeführt - sende als ursprünglicher Benutzer
+                import pwd
+                pw_record = pwd.getpwnam(sudo_user)
+                user_uid = pw_record.pw_uid
+                
+                # Suche nach DISPLAY und DBUS in laufenden Prozessen des Users
+                display = None
+                dbus_addr = None
+                
+                try:
+                    ps_result = subprocess.run(
+                        ["pgrep", "-u", sudo_user],
+                        capture_output=True,
+                        text=True,
+                        check=False
+                    )
+                    
+                    for pid in ps_result.stdout.strip().split('\n'):
+                        if pid and pid.isdigit():
+                            try:
+                                with open(f"/proc/{pid}/environ", 'rb') as f:
+                                    env_content = f.read().decode('utf-8', errors='ignore')
+                                    for item in env_content.split('\0'):
+                                        if item.startswith('DISPLAY='):
+                                            display = item.split('=', 1)[1]
+                                        elif item.startswith('DBUS_SESSION_BUS_ADDRESS='):
+                                            dbus_addr = item.split('=', 1)[1]
+                                    
+                                    if display and dbus_addr:
+                                        break
+                            except:
+                                continue
+                    
+                    # Fallback: Standard-Werte
+                    if not display:
+                        display = ":0"
+                    if not dbus_addr:
+                        dbus_addr = f"unix:path=/run/user/{user_uid}/bus"
+                    
+                except:
+                    # Fallback
+                    display = ":0"
+                    dbus_addr = f"unix:path=/run/user/{user_uid}/bus"
+                
+                # Sende Benachrichtigung als User mit korrekten Umgebungsvariablen
+                subprocess.run(
+                    ["sudo", "-u", sudo_user,
+                     "env", f"DISPLAY={display}", f"DBUS_SESSION_BUS_ADDRESS={dbus_addr}",
+                     "notify-send", "-u", urgency, "-i", icon, title, message],
+                    capture_output=True,
+                    check=False,
+                    timeout=5
+                )
+            else:
+                # Normal ausgeführt (nicht sudo)
+                subprocess.run(
+                    ["notify-send", "-u", urgency, "-i", icon, title, message],
+                    capture_output=True,
+                    check=False,
+                    timeout=5
+                )
+                
+        except Exception:
+            # Stille Fehlerbehandlung - Benachrichtigungen sind optional
+            pass
+        
+        return
+    
     def save_status_log(self):
         """Speichert den Status-Log als JSON"""
         if self.dry_run:
@@ -492,11 +591,51 @@ class RaspbianAutoUpdater:
                 "\n⚠️  NEUSTART ERFORDERLICH! Bitte System neu starten.",
                 color=Color.WARNING
             )
+            
+            # Sende Desktop-Benachrichtigung
+            pkg_count = len(self.upgraded_packages)
+            notification_message = (
+                f"System-Update abgeschlossen!\n"
+                f"{pkg_count} Paket(e) wurden aktualisiert.\n\n"
+                f"⚠️ Ein Neustart ist erforderlich.\n"
+                f"Bitte starten Sie das System neu."
+            )
+            self.send_desktop_notification(
+                "Raspbian Auto-Updater - Neustart erforderlich",
+                notification_message,
+                urgency="critical"
+            )
         else:
             self.print_status(
                 "\n✓ Kein Neustart erforderlich.",
                 color=Color.OKGREEN
             )
+            
+            # Sende Benachrichtigung bei Updates ohne Neustart
+            if self.upgraded_packages:
+                pkg_count = len(self.upgraded_packages)
+                notification_message = (
+                    f"System-Update erfolgreich abgeschlossen!\n"
+                    f"{pkg_count} Paket(e) wurden aktualisiert.\n\n"
+                    f"✓ Kein Neustart erforderlich."
+                )
+                self.send_desktop_notification(
+                    "Raspbian Auto-Updater",
+                    notification_message,
+                    urgency="normal"
+                )
+            else:
+                # Benachrichtigung wenn keine Updates vorhanden
+                notification_message = (
+                    f"System-Update abgeschlossen.\n\n"
+                    f"✓ System ist bereits auf dem neuesten Stand.\n"
+                    f"✓ Keine Updates verfügbar."
+                )
+                self.send_desktop_notification(
+                    "Raspbian Auto-Updater",
+                    notification_message,
+                    urgency="low"
+                )
         
         if self.log_file:
             self.print_status(f"Log-Datei: {self.log_file}", color=Color.OKBLUE)
