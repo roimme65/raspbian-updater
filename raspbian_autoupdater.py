@@ -309,7 +309,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         return self.run_command(
-            ["apt-get", "update"],
+            ["apt-get", "update", "-q"],
             "APT Update - Paketlisten aktualisieren",
             show_output=True
         )[0]
@@ -322,7 +322,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         success, output = self.run_command(
-            ["apt-get", "upgrade", "-y"],
+            ["apt-get", "upgrade", "-y", "-q"],
             "APT Upgrade - Pakete aktualisieren",
             show_output=True
         )
@@ -341,7 +341,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         success, output = self.run_command(
-            ["apt-get", "dist-upgrade", "-y"],
+            ["apt-get", "dist-upgrade", "-y", "-q"],
             "APT Dist-Upgrade - Distribution aktualisieren",
             show_output=True
         )
@@ -365,7 +365,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         return self.run_command(
-            ["apt-get", "autoremove", "-y"],
+            ["apt-get", "autoremove", "-y", "-q"],
             "APT Autoremove - Unnötige Pakete entfernen",
             show_output=True
         )[0]
@@ -378,7 +378,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         return self.run_command(
-            ["apt-get", "autoclean"],
+            ["apt-get", "autoclean", "-q"],
             "APT Autoclean - Cache bereinigen",
             show_output=True
         )[0]
