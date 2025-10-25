@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}"
 echo "╔══════════════════════════════════════════════════════╗"
 echo "║   Raspbian Auto-Updater - Deinstallation            ║"
-echo "║   Version 1.0.3                                      ║"
+echo "║   Version 1.0.4                                      ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
@@ -106,7 +106,23 @@ else
     echo -e "${GREEN}✓ (nicht installiert)${NC}"
 fi
 
-# 5. Log-Verzeichnis optional löschen
+# 5. Desktop-Benachrichtigungs-Pakete optional deinstallieren
+echo ""
+echo -e "${YELLOW}Desktop-Benachrichtigungs-Pakete (libnotify-bin, notification-daemon)${NC}"
+echo "Diese Pakete wurden von install.sh installiert für Desktop-Benachrichtigungen."
+echo -e "${YELLOW}⚠️  WARNUNG: Diese Pakete könnten auch von anderen Programmen verwendet werden!${NC}"
+read -p "Möchten Sie diese Pakete deinstallieren? (j/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[JjYy]$ ]]; then
+    echo "Deinstalliere Desktop-Benachrichtigungs-Pakete..."
+    apt-get remove -y libnotify-bin notification-daemon 2>/dev/null || echo -e "${YELLOW}(Einige Pakete waren nicht installiert)${NC}"
+    apt-get autoremove -y 2>/dev/null
+    echo -e "${GREEN}✓ Pakete deinstalliert${NC}"
+else
+    echo -e "${BLUE}ℹ Desktop-Benachrichtigungs-Pakete bleiben installiert${NC}"
+fi
+
+# 6. Log-Verzeichnis optional löschen
 echo ""
 if [ -d "/var/log/raspbian-updater" ]; then
     LOG_SIZE=$(du -sh /var/log/raspbian-updater 2>/dev/null | cut -f1)
