@@ -151,12 +151,17 @@ class RaspbianAutoUpdater:
         try:
             if show_output:
                 # Zeige Ausgabe in Echtzeit
+                # Setze Umgebungsvariablen für saubere Ausgabe
+                env = os.environ.copy()
+                env['DEBIAN_FRONTEND'] = 'noninteractive'
+                
                 process = subprocess.Popen(
                     command,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     universal_newlines=True,
-                    bufsize=1
+                    bufsize=1,
+                    env=env
                 )
                 
                 output_lines = []
@@ -172,11 +177,15 @@ class RaspbianAutoUpdater:
                 returncode = process.returncode
             else:
                 # Führe Befehl ohne Ausgabe aus
+                env = os.environ.copy()
+                env['DEBIAN_FRONTEND'] = 'noninteractive'
+                
                 result = subprocess.run(
                     command,
                     capture_output=True,
                     text=True,
-                    check=False
+                    check=False,
+                    env=env
                 )
                 output = result.stdout + result.stderr
                 returncode = result.returncode
@@ -322,7 +331,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         success, output = self.run_command(
-            ["apt-get", "upgrade", "-y", "-q"],
+            ["apt-get", "upgrade", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
             "APT Upgrade - Pakete aktualisieren",
             show_output=True
         )
@@ -341,7 +350,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         success, output = self.run_command(
-            ["apt-get", "dist-upgrade", "-y", "-q"],
+            ["apt-get", "dist-upgrade", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
             "APT Dist-Upgrade - Distribution aktualisieren",
             show_output=True
         )
@@ -365,7 +374,7 @@ class RaspbianAutoUpdater:
             True bei Erfolg, sonst False
         """
         return self.run_command(
-            ["apt-get", "autoremove", "-y", "-q"],
+            ["apt-get", "autoremove", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
             "APT Autoremove - Unnötige Pakete entfernen",
             show_output=True
         )[0]
