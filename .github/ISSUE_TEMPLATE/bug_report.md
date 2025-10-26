@@ -33,7 +33,7 @@ Fügen Sie hier die Terminal-Ausgabe oder Log-Datei-Inhalte ein
 Bitte vervollständigen Sie die folgenden Informationen:
  - **OS**: [z.B. Raspbian Trixie, Debian 13]
  - **Python Version**: [Ausgabe von `python3 --version`]
- - **Auto-Updater Version**: [z.B. v1.0.1]
+ - **Auto-Updater Version**: [z.B. v1.0.4]
  - **Hardware**: [z.B. Raspberry Pi 5, Raspberry Pi 4]
 
 ## 📝 Verwendeter Befehl
