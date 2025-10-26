@@ -14,6 +14,29 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Prüfe Python 3
+echo "🐍 Prüfe Python-Installation..."
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Python 3 nicht gefunden!"
+    echo "   Bitte installieren: sudo apt-get install python3"
+    exit 1
+fi
+
+# Prüfe Python Version (3.9+)
+PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+REQUIRED_VERSION="3.9"
+if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$PYTHON_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
+    echo "❌ Python $PYTHON_VERSION gefunden, aber $REQUIRED_VERSION+ erforderlich!"
+    echo "   Aktuelle Version: $PYTHON_VERSION"
+    echo "   Benötigte Version: $REQUIRED_VERSION oder höher"
+    echo ""
+    echo "   Auf Debian/Raspbian Bullseye oder älter:"
+    echo "   sudo apt-get update"
+    echo "   sudo apt-get install python3.9"
+    exit 1
+fi
+echo "✓ Python $PYTHON_VERSION gefunden"
+
 # Aktuelles Verzeichnis
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UPDATER_SCRIPT="$SCRIPT_DIR/raspbian_autoupdater.py"
