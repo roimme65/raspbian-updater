@@ -18,7 +18,15 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 - 📦 **Automatische Installation** von Desktop-Benachrichtigungs-Tools
   - libnotify-bin wird in install.sh installiert
   - notification-daemon wird in install.sh installiert
+  - **notification-daemon Autostart** automatisch eingerichtet
+  - Startet notification-daemon sofort nach Installation
+  - Funktioniert nach Neustart automatisch
   - Hinweis für Benutzer über GUI-Funktionalität
+- 🗑️ **uninstall.sh erweitert** für Benachrichtigungs-Komponenten
+  - Entfernt notification-daemon Autostart-Datei
+  - Optional: Deinstalliert libnotify-bin und notification-daemon
+  - Stoppt laufende notification-daemon Prozesse
+  - Bereinigt für alle Benutzer
 
 ### Behoben
 - 🐛 **Seitlicher Versatz in apt-Ausgabe**
@@ -26,6 +34,10 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
   - DEBIAN_FRONTEND=noninteractive für alle apt-Befehle
   - -o Dpkg::Use-Pty=0 unterdrückt dpkg-Fortschrittsanzeige
   - Saubere, lineare Ausgabe ohne Versatz
+- 🔧 **notification-daemon startet nicht nach Neustart**
+  - Autostart-Datei wird automatisch erstellt
+  - Funktioniert für SUDO_USER mit korrekten Berechtigungen
+  - Benachrichtigungen funktionieren sofort nach System-Neustart
 
 ### Verbessert
 - 📝 **Dokumentation** um Desktop-Benachrichtigungen erweitert

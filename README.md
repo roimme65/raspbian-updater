@@ -42,6 +42,7 @@ Ein vollständiger Python-basierter Auto-Updater für Raspbian/Debian Trixie mit
 - 🔵 **Info** wenn keine Updates verfügbar
 - 📱 Funktioniert auch bei Cronjob-Ausführung
 - 🎯 Automatische Erkennung von GUI-Sessions
+- ⚙️ **Autostart automatisch eingerichtet** - funktioniert nach Neustart
 
 ## 📦 Installation
 
@@ -58,6 +59,8 @@ sudo ./install.sh
 
 Das Installations-Script:
 - ✅ Setzt Ausführungsrechte
+- ✅ Installiert `libnotify-bin` und `notification-daemon`
+- ✅ Richtet `notification-daemon` Autostart ein (nach Neustart automatisch)
 - ✅ Erstellt Log-Verzeichnis (`/var/log/raspbian-updater/`)
 - ✅ Erstellt Symlink (`/usr/local/bin/raspbian-autoupdater`)
 - ✅ Bietet optionale Cronjob-Einrichtung an
@@ -72,6 +75,8 @@ sudo ./uninstall.sh
 Das Deinstallations-Script entfernt:
 - ✅ Symlink `/usr/local/bin/raspbian-autoupdater`
 - ✅ Alle Cronjobs für raspbian-autoupdater
+- ✅ `notification-daemon` Autostart-Datei
+- ✅ Optional: `libnotify-bin` und `notification-daemon` Pakete (nach Rückfrage)
 - ✅ Optional: Log-Verzeichnis (nach Rückfrage)
 
 ### Manuelle Installation
