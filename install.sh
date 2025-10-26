@@ -48,6 +48,43 @@ else
     echo "✓ notification-daemon bereits installiert"
 fi
 
+# Richte notification-daemon Autostart ein für den aktuellen Benutzer
+if [ -n "$SUDO_USER" ]; then
+    USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+    AUTOSTART_DIR="$USER_HOME/.config/autostart"
+    AUTOSTART_FILE="$AUTOSTART_DIR/notification-daemon.desktop"
+    
+    echo "🔧 Richte notification-daemon Autostart ein..."
+    
+    # Erstelle Autostart-Verzeichnis
+    sudo -u "$SUDO_USER" mkdir -p "$AUTOSTART_DIR"
+    
+    # Erstelle Autostart-Datei
+    cat > "$AUTOSTART_FILE" << 'EOF'
+[Desktop Entry]
+Type=Application
+Name=Notification Daemon
+Comment=Display notifications for raspbian-autoupdater
+Exec=/usr/lib/notification-daemon/notification-daemon
+Terminal=false
+Hidden=false
+X-GNOME-Autostart-enabled=true
+EOF
+    
+    # Setze korrekte Berechtigungen
+    chown "$SUDO_USER:$SUDO_USER" "$AUTOSTART_FILE"
+    chmod +x "$AUTOSTART_FILE"
+    
+    echo "✓ notification-daemon Autostart eingerichtet"
+    
+    # Starte notification-daemon sofort (im Hintergrund)
+    if ! pgrep -x notification-daemon > /dev/null; then
+        sudo -u "$SUDO_USER" DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u "$SUDO_USER")/bus \
+            /usr/lib/notification-daemon/notification-daemon &
+        echo "✓ notification-daemon gestartet"
+    fi
+fi
+
 echo "ℹ️  Hinweis: Desktop-Benachrichtigungen funktionieren nur in GUI-Sessions"
 echo "   Falls Sie die grafische Oberfläche verwenden, werden Sie über Updates informiert."
 

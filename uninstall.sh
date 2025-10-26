@@ -115,11 +115,42 @@ read -p "Möchten Sie diese Pakete deinstallieren? (j/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[JjYy]$ ]]; then
     echo "Deinstalliere Desktop-Benachrichtigungs-Pakete..."
+    
+    # Stoppe notification-daemon falls er läuft
+    pkill -x notification-daemon 2>/dev/null || true
+    
+    # Entferne Autostart-Datei für alle Benutzer
+    for user_home in /home/*; do
+        if [ -d "$user_home" ]; then
+            AUTOSTART_FILE="$user_home/.config/autostart/notification-daemon.desktop"
+            if [ -f "$AUTOSTART_FILE" ]; then
+                rm -f "$AUTOSTART_FILE"
+                echo -e "  ${GREEN}✓ Autostart entfernt für $(basename $user_home)${NC}"
+            fi
+        fi
+    done
+    
+    # Deinstalliere Pakete
     apt-get remove -y libnotify-bin notification-daemon 2>/dev/null || echo -e "${YELLOW}(Einige Pakete waren nicht installiert)${NC}"
     apt-get autoremove -y 2>/dev/null
     echo -e "${GREEN}✓ Pakete deinstalliert${NC}"
 else
     echo -e "${BLUE}ℹ Desktop-Benachrichtigungs-Pakete bleiben installiert${NC}"
+    
+    # Trotzdem Autostart-Datei entfernen (wurde von raspbian-updater erstellt)
+    echo -e "${BLUE}Entferne notification-daemon Autostart (von raspbian-updater)...${NC}"
+    for user_home in /home/*; do
+        if [ -d "$user_home" ]; then
+            AUTOSTART_FILE="$user_home/.config/autostart/notification-daemon.desktop"
+            if [ -f "$AUTOSTART_FILE" ]; then
+                # Prüfe ob Datei "raspbian-autoupdater" im Comment enthält
+                if grep -q "raspbian-autoupdater" "$AUTOSTART_FILE" 2>/dev/null; then
+                    rm -f "$AUTOSTART_FILE"
+                    echo -e "  ${GREEN}✓ Autostart entfernt für $(basename $user_home)${NC}"
+                fi
+            fi
+        fi
+    done
 fi
 
 # 6. Log-Verzeichnis optional löschen
