@@ -5,6 +5,20 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.5] - 2025-10-26
+
+### Hinzugefügt
+- 🐍 **Python-Versions-Prüfung** in install.sh
+  - Prüft ob Python 3 installiert ist
+  - Prüft ob Python Version >= 3.9
+  - Klare Fehlermeldungen bei fehlenden Voraussetzungen
+  - Installationsanleitung für ältere Systeme
+  - Verhindert Silent-Failures bei Installation
+  - Exit-Code 1 wenn Voraussetzungen nicht erfüllt
+
+### Geändert
+- 🔧 **Installation** bricht früh ab bei fehlender oder zu alter Python-Version
+
 ## [1.0.4] - 2025-10-25
 
 ### Hinzugefügt
