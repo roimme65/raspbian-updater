@@ -405,6 +405,7 @@ class RaspbianAutoUpdater:
     def send_desktop_notification(self, title: str, message: str, urgency: str = "normal"):
         """
         Sendet eine Desktop-Benachrichtigung via notify-send
+        Funktioniert auch aus Cronjobs heraus
         
         Args:
             title: Titel der Benachrichtigung
@@ -429,74 +430,121 @@ class RaspbianAutoUpdater:
             icon = "system-software-update"
         
         try:
-            # Versuche als aktueller Benutzer (wenn sudo benutzt wurde)
-            sudo_user = os.environ.get('SUDO_USER')
+            # Finde den aktiven Desktop-Benutzer und dessen Umgebung
+            target_user = os.environ.get('SUDO_USER') or os.environ.get('USER')
             
-            if sudo_user:
-                # Script wurde mit sudo ausgeführt - sende als ursprünglicher Benutzer
-                import pwd
-                pw_record = pwd.getpwnam(sudo_user)
+            if not target_user:
+                return
+            
+            # Suche nach aktivem Display für den Benutzer
+            display = None
+            dbus_addr = None
+            user_uid = None
+            
+            import pwd
+            try:
+                pw_record = pwd.getpwnam(target_user)
                 user_uid = pw_record.pw_uid
+            except:
+                return
+            
+            # Methode 1: Suche in laufenden Prozessen
+            try:
+                # Finde GUI-Prozesse des Users (z.B. gnome-session, lxsession, wayfire)
+                ps_result = subprocess.run(
+                    ["ps", "-u", target_user, "-o", "pid,cmd"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
                 
-                # Suche nach DISPLAY und DBUS in laufenden Prozessen des Users
-                display = None
-                dbus_addr = None
+                gui_pids = []
+                for line in ps_result.stdout.split('\n'):
+                    if any(x in line.lower() for x in ['gnome-session', 'lxsession', 'wayfire', 'xfce4-session', 'kde', 'mate-session']):
+                        parts = line.strip().split(None, 1)
+                        if parts and parts[0].isdigit():
+                            gui_pids.append(parts[0])
                 
-                try:
-                    ps_result = subprocess.run(
-                        ["pgrep", "-u", sudo_user],
-                        capture_output=True,
-                        text=True,
-                        check=False
-                    )
-                    
-                    for pid in ps_result.stdout.strip().split('\n'):
-                        if pid and pid.isdigit():
-                            try:
-                                with open(f"/proc/{pid}/environ", 'rb') as f:
-                                    env_content = f.read().decode('utf-8', errors='ignore')
-                                    for item in env_content.split('\0'):
-                                        if item.startswith('DISPLAY='):
-                                            display = item.split('=', 1)[1]
-                                        elif item.startswith('DBUS_SESSION_BUS_ADDRESS='):
-                                            dbus_addr = item.split('=', 1)[1]
-                                    
-                                    if display and dbus_addr:
-                                        break
-                            except:
-                                continue
-                    
-                    # Fallback: Standard-Werte
-                    if not display:
-                        display = ":0"
-                    if not dbus_addr:
-                        dbus_addr = f"unix:path=/run/user/{user_uid}/bus"
-                    
-                except:
-                    # Fallback
+                # Durchsuche Umgebungsvariablen der GUI-Prozesse
+                for pid in gui_pids:
+                    try:
+                        with open(f"/proc/{pid}/environ", 'rb') as f:
+                            env_content = f.read().decode('utf-8', errors='ignore')
+                            for item in env_content.split('\0'):
+                                if item.startswith('DISPLAY=') and not display:
+                                    display = item.split('=', 1)[1]
+                                elif item.startswith('DBUS_SESSION_BUS_ADDRESS=') and not dbus_addr:
+                                    dbus_addr = item.split('=', 1)[1]
+                            
+                            if display and dbus_addr:
+                                break
+                    except:
+                        continue
+            except:
+                pass
+            
+            # Methode 2: Standard-Pfade für DBUS
+            if not dbus_addr and user_uid:
+                # Versuche Standard-DBUS-Socket
+                possible_dbus = [
+                    f"unix:path=/run/user/{user_uid}/bus",
+                    f"unix:path=/var/run/user/{user_uid}/dbus/user_bus_socket"
+                ]
+                for dbus_path in possible_dbus:
+                    socket_path = dbus_path.split('unix:path=')[1] if 'unix:path=' in dbus_path else None
+                    if socket_path and os.path.exists(socket_path):
+                        dbus_addr = dbus_path
+                        break
+            
+            # Methode 3: Fallback-Werte
+            if not display:
+                # Prüfe ob X Server läuft
+                if os.path.exists('/tmp/.X11-unix/X0'):
                     display = ":0"
-                    dbus_addr = f"unix:path=/run/user/{user_uid}/bus"
-                
-                # Sende Benachrichtigung als User mit korrekten Umgebungsvariablen
+                elif os.path.exists('/tmp/.X11-unix/X1'):
+                    display = ":1"
+                else:
+                    # Kein Display verfügbar - abbrechen
+                    return
+            
+            if not dbus_addr and user_uid:
+                dbus_addr = f"unix:path=/run/user/{user_uid}/bus"
+            
+            # Sende Benachrichtigung
+            env_vars = {
+                'DISPLAY': display,
+                'DBUS_SESSION_BUS_ADDRESS': dbus_addr,
+                'XAUTHORITY': f"/home/{target_user}/.Xauthority"
+            }
+            
+            if os.environ.get('SUDO_USER'):
+                # Als SUDO_USER ausführen
                 subprocess.run(
-                    ["sudo", "-u", sudo_user,
-                     "env", f"DISPLAY={display}", f"DBUS_SESSION_BUS_ADDRESS={dbus_addr}",
+                    ["sudo", "-u", target_user,
+                     "env", f"DISPLAY={display}", 
+                     f"DBUS_SESSION_BUS_ADDRESS={dbus_addr}",
+                     f"XAUTHORITY=/home/{target_user}/.Xauthority",
                      "notify-send", "-u", urgency, "-i", icon, title, message],
                     capture_output=True,
                     check=False,
                     timeout=5
                 )
             else:
-                # Normal ausgeführt (nicht sudo)
+                # Normal ausführen (mit env)
+                import copy
+                env = copy.copy(os.environ)
+                env.update(env_vars)
                 subprocess.run(
                     ["notify-send", "-u", urgency, "-i", icon, title, message],
                     capture_output=True,
                     check=False,
-                    timeout=5
+                    timeout=5,
+                    env=env
                 )
                 
-        except Exception:
-            # Stille Fehlerbehandlung - Benachrichtigungen sind optional
+        except Exception as e:
+            # Debug-Log bei Fehlern (optional)
+            self.log(f"Desktop-Benachrichtigung fehlgeschlagen: {e}", level="DEBUG")
             pass
         
         return

@@ -158,7 +158,31 @@ if [[ $REPLY =~ ^[Jj]$ ]]; then
             CRON_LINE="0 2 * * 0 /usr/local/bin/raspbian-autoupdater"
             ;;
         3)
-            CRON_LINE="0 3 * * * /usr/local/bin/raspbian-autoupdater\n0 6 * * * /usr/local/bin/raspbian-autoupdater --quick"
+            # Zwei separate Zeilen für vollständig + schnell
+            TEMP_CRON="/tmp/raspbian_cron_$$"
+            crontab -l 2>/dev/null | grep -v raspbian-autoupdater > "$TEMP_CRON" || true
+            echo "0 3 * * * /usr/local/bin/raspbian-autoupdater" >> "$TEMP_CRON"
+            echo "0 6 * * * /usr/local/bin/raspbian-autoupdater --quick" >> "$TEMP_CRON"
+            
+            if [ -s "$TEMP_CRON" ]; then
+                crontab "$TEMP_CRON"
+                CRON_RESULT=$?
+            else
+                echo "❌ Fehler: Temporäre Datei ist leer"
+                CRON_RESULT=1
+            fi
+            
+            rm -f "$TEMP_CRON"
+            
+            if [ $CRON_RESULT -eq 0 ]; then
+                echo "✅ Cron-Jobs wurden eingerichtet!"
+                echo ""
+                echo "Aktuelle Cron-Jobs:"
+                crontab -l | grep raspbian-autoupdater
+            else
+                echo "❌ Fehler beim Einrichten der Cron-Jobs"
+            fi
+            CRON_LINE=""  # Verhindere doppelte Ausführung unten
             ;;
         4)
             echo "Bitte Cron-Syntax eingeben (z.B. '0 3 * * *' für täglich um 3:00):"
@@ -171,12 +195,34 @@ if [[ $REPLY =~ ^[Jj]$ ]]; then
     esac
     
     if [ -n "$CRON_LINE" ]; then
-        # Füge Cron-Job hinzu
-        (crontab -l 2>/dev/null | grep -v raspbian-autoupdater; echo -e "$CRON_LINE") | crontab -
-        echo "✅ Cron-Job wurde eingerichtet!"
-        echo ""
-        echo "Aktuelle Cron-Jobs:"
-        crontab -l | grep raspbian-autoupdater
+        # Füge Cron-Job hinzu (entferne alte raspbian-autoupdater Einträge)
+        # Verwende temporäres File um Pipe-Probleme zu vermeiden
+        TEMP_CRON="/tmp/raspbian_cron_$$"
+        crontab -l 2>/dev/null | grep -v raspbian-autoupdater > "$TEMP_CRON" || true
+        echo "$CRON_LINE" >> "$TEMP_CRON"
+        
+        if [ -s "$TEMP_CRON" ]; then
+            crontab "$TEMP_CRON"
+            CRON_RESULT=$?
+        else
+            echo "❌ Fehler: Temporäre Datei ist leer"
+            CRON_RESULT=1
+        fi
+        
+        rm -f "$TEMP_CRON"
+        
+        if [ $CRON_RESULT -eq 0 ]; then
+            echo "✅ Cron-Job wurde eingerichtet!"
+            echo ""
+            echo "Aktuelle Cron-Jobs:"
+            crontab -l 2>/dev/null | grep raspbian-autoupdater
+        else
+            echo "❌ Fehler beim Einrichten des Cron-Jobs"
+            echo "Bitte manuell einrichten:"
+            echo "  sudo crontab -e"
+            echo "Und hinzufügen:"
+            echo "  $CRON_LINE"
+        fi
     fi
 fi
 
