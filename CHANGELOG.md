@@ -5,6 +5,44 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
+## [1.0.6] - 2025-10-27
+
+### Behoben
+- 🔧 **Cronjob-Installation** funktioniert jetzt zuverlässig
+  - Fix: Verwendung von temporärer Datei statt Pipe-Konstruktion
+  - Fix: `|| true` bei grep verhindert Fehler bei leerer Crontab
+  - Fix: Prüfung ob Datei Inhalt hat vor crontab-Anwendung
+  - Angewendet auf Option 1/2 (einzelner Cronjob) und Option 3 (duale Cronjobs)
+  - Root-Crontab wird korrekt erstellt wenn mit sudo ausgeführt
+  - Getestet: Install/Uninstall-Zyklus erfolgreich
+
+- 🔔 **Desktop-Benachrichtigungen** funktionieren von Cronjobs
+  - Komplette Neuimplementierung von `send_desktop_notification()`
+  - **Methode 1**: Suche nach laufenden GUI-Prozessen für DISPLAY/DBUS
+    * Unterstützt: gnome-session, lxsession, wayfire, xfce4-session, kde, mate-session
+    * Extrahiert Umgebungsvariablen direkt aus Prozess-Informationen
+  - **Methode 2**: Prüfung Standard-DBUS-Socket-Pfade
+    * /run/user/{uid}/bus
+    * /var/run/user/{uid}/dbus/user_bus_socket
+  - **Methode 3**: Fallback zu X11-Socket-Erkennung
+    * /tmp/.X11-unix/X0, X1, etc.
+  - Hinzugefügt: XAUTHORITY Umgebungsvariable für X-Authentifizierung
+  - Prüfung ob X-Server existiert vor Benachrichtigungs-Versuch
+  - Debug-Logging bei Fehlschlägen
+  - Funktioniert zuverlässig in Cron-Umgebungen ohne vorgesetzte Variablen
+
+### Verbessert
+- 📊 **Ausgabe-Formatierung** in Update-Zusammenfassung
+  - Konsistente Timestamps auf allen Status-Zeilen
+  - Leerzeilen ohne Timestamps (bessere Lesbarkeit)
+  - Saubere Trennung zwischen Zusammenfassungs-Abschnitten
+  - Log-Datei-Pfad jetzt mit eigenem Timestamp
+
+### Geändert
+- 🗑️ **uninstall.sh** Banner vereinfacht
+  - Versionsnummer entfernt (war verwirrend/veraltet)
+  - Klareres, fokussiertes Banner
+
 ## [1.0.5] - 2025-10-26
 
 ### Hinzugefügt
