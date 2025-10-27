@@ -16,7 +16,6 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}"
 echo "╔══════════════════════════════════════════════════════╗"
 echo "║   Raspbian Auto-Updater - Deinstallation            ║"
-echo "║   Version 1.0.4                                      ║"
 echo "╚══════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 

@@ -654,8 +654,9 @@ class RaspbianAutoUpdater:
                 urgency="critical"
             )
         else:
+            print()  # Leerzeile
             self.print_status(
-                "\n✓ Kein Neustart erforderlich.",
+                "✓ Kein Neustart erforderlich.",
                 color=Color.OKGREEN
             )
             
@@ -686,6 +687,7 @@ class RaspbianAutoUpdater:
                 )
         
         if self.log_file:
+            print()  # Leerzeile
             self.print_status(f"Log-Datei: {self.log_file}", color=Color.OKBLUE)
         
         return True
