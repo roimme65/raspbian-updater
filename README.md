@@ -330,6 +330,60 @@ Siehe [SECURITY.md](SECURITY.md) für Details zur Sicherheitsrichtlinie.
 - Root-Zugriff für System-Updates
 - Keine externen Python-Bibliotheken erforderlich (nur Standard-Library)
 
+## 🔧 Troubleshooting
+
+### Falsche Kernel-Warnung auf Raspberry Pi 5
+
+**Problem:**
+Nach Updates zeigt `needrestart` möglicherweise eine falsche Warnung:
+```
+Ausstehendes Kernel-Upgrade!
+  
+  Laufende Kernel-Version:
+    6.12.47+rpt-rpi-2712
+  
+  Diagnose:
+    Die aktuelle Kernel-Version ist nicht die erwartete Version 6.12.47+rpt-rpi-v8.
+```
+
+**Ursache:**
+Das Raspberry Pi 5 verwendet den **BCM2712 SoC** und benötigt einen speziellen Kernel (`rpi-2712`), nicht den generischen `rpi-v8` Kernel. Die Standardkonfiguration von `needrestart` erkennt dies nicht korrekt.
+
+**Kernel-Varianten:**
+- `rpi-2712`: Für Raspberry Pi 5 (BCM2712 SoC) ✅ **Korrekt für Pi 5**
+- `rpi-v8`: Für ältere Modelle (Pi 3B+, Pi 4, Pi 400)
+
+**Lösung:**
+Erstellen Sie eine spezifische `needrestart`-Konfiguration für das Pi 5:
+
+```bash
+sudo tee /etc/needrestart/conf.d/raspberrypi5.conf > /dev/null << 'EOF'
+# Raspberry Pi 5 specific needrestart configuration
+# The Pi 5 uses the BCM2712 SoC and requires the kernel_2712.img kernel variant
+
+# Filter kernel image filenames to match the Pi 5 kernel variant
+$nrconf{kernelfilter} = qr(kernel_2712\.img);
+EOF
+```
+
+**Verifizierung:**
+Nach der Konfiguration sollte `needrestart` keinen Kernel-Neustart mehr fälschlicherweise anfordern:
+
+```bash
+sudo needrestart -b
+```
+
+Erwartete Ausgabe:
+```
+NEEDRESTART-VER: 3.11
+NEEDRESTART-KCUR: 6.12.47+rpt-rpi-2712
+NEEDRESTART-KSTA: 0
+```
+
+`NEEDRESTART-KSTA: 0` bedeutet: Kein Kernel-Neustart erforderlich ✅
+
+**Hinweis:** Diese Konfiguration muss nur einmal erstellt werden und bleibt bei System-Updates erhalten.
+
 ## 🤝 Beitragen
 
 Feedback, Bug-Reports und Pull Requests sind willkommen!
