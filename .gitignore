@@ -4,11 +4,16 @@ __pycache__/
 *$py.class
 *.so
 .Python
+*.pyc
+dist/
+build/
+*.egg-info/
 
 # Virtual Environment
 venv/
 env/
 ENV/
+.venv/
 
 # IDE
 .vscode/
@@ -16,10 +21,51 @@ ENV/
 *.swp
 *.swo
 *~
+.DS_Store
 
 # Logs (falls lokal getestet)
 *.log
 logs/
+/var/log/raspbian-updater/
+
+# Test-Dateien
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Temporäre Dateien
+*.tmp
+*.bak
+*.orig
+*~
+
+# System-Dateien
+.Trash-*/
+Thumbs.db
+
+# Sensitive Daten
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+.env
+.env.local
+
+# Release-Builds
+releases/*.tar.gz
+releases/*.zip
 
 # Interne Dokumente (nicht für Repository)
 interne-dokumente/
+
+# GitHub Actions lokale Tests
+.github/workflows/*.local.yml
+
+# Bandit Security Reports
+bandit-report.json
+bandit-report.txt
+
+# Script-spezifisch
+/tmp/raspbian_cron_*

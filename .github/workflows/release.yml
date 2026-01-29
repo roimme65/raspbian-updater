@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Extract Version
+      id: version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        
+    - name: Verify VERSION file
+      run: |
+        FILE_VERSION=$(cat VERSION)
+        TAG_VERSION="${{ steps.version.outputs.version }}"
+        if [ "$FILE_VERSION" != "$TAG_VERSION" ]; then
+          echo "ERROR: VERSION file ($FILE_VERSION) does not match tag ($TAG_VERSION)"
+          exit 1
+        fi
+        
+    - name: Check Release Notes
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        NOTES_FILE="releases/v${VERSION}.md"
+        if [ ! -f "$NOTES_FILE" ]; then
+          echo "ERROR: Release notes file not found: $NOTES_FILE"
+          exit 1
+        fi
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: "v${{ steps.version.outputs.version }} - Raspbian Auto-Updater"
+        body_path: releases/v${{ steps.version.outputs.version }}.md
+        files: |
+          raspbian_autoupdater.py
+          install.sh
+          uninstall.sh
+          manage_cronjobs.sh
+          LICENSE
+          README.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Notify Success
+      if: success()
+      run: |
+        echo "✅ Release v${{ steps.version.outputs.version }} successfully created!"
+        echo "📦 Download: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"

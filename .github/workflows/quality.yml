@@ -1,0 +1,89 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-python:
+    name: Python Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+        
+    - name: Install Dependencies
+      run: |
+        pip install flake8 pylint
+        
+    - name: Run Flake8
+      run: |
+        flake8 raspbian_autoupdater.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 raspbian_autoupdater.py --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: Run Pylint
+      run: |
+        pylint raspbian_autoupdater.py --exit-zero
+        
+  test-scripts:
+    name: Test Scripts Syntax
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: Check Bash Scripts Syntax
+      run: |
+        for script in install.sh uninstall.sh manage_cronjobs.sh scripts/*.sh; do
+          if [ -f "$script" ]; then
+            echo "Checking $script..."
+            bash -n "$script"
+          fi
+        done
+        
+    - name: Test Python Script
+      run: |
+        python3 -m py_compile raspbian_autoupdater.py
+        
+  version-check:
+    name: Version Consistency Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: Check VERSION file exists
+      run: |
+        if [ ! -f "VERSION" ]; then
+          echo "ERROR: VERSION file missing!"
+          exit 1
+        fi
+        
+    - name: Validate VERSION format
+      run: |
+        VERSION=$(cat VERSION)
+        if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "ERROR: Invalid version format: $VERSION"
+          echo "Expected format: X.Y.Z"
+          exit 1
+        fi
+        echo "Version OK: $VERSION"
+        
+    - name: Check README badge
+      run: |
+        VERSION=$(cat VERSION)
+        if ! grep -q "version-${VERSION}" README.md; then
+          echo "WARNING: README.md badge version mismatch"
+          echo "VERSION file: $VERSION"
+          echo "README badge should contain: version-${VERSION}"
+        fi
