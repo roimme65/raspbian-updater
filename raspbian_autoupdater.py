@@ -7,7 +7,7 @@ Autor: Auto-generiert
 Datum: 2025-10-24
 """
 
-import subprocess
+import subprocess  # nosec B404 - subprocess needed for system updates
 import sys
 import os
 import time
@@ -155,7 +155,7 @@ class RaspbianAutoUpdater:
                 env = os.environ.copy()
                 env['DEBIAN_FRONTEND'] = 'noninteractive'
                 
-                process = subprocess.Popen(
+                process = subprocess.Popen(  # nosec B603 - controlled system commands
                     command,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -180,7 +180,7 @@ class RaspbianAutoUpdater:
                 env = os.environ.copy()
                 env['DEBIAN_FRONTEND'] = 'noninteractive'
                 
-                result = subprocess.run(
+                result = subprocess.run(  # nosec B603 - controlled system commands
                     command,
                     capture_output=True,
                     text=True,
@@ -302,8 +302,8 @@ class RaspbianAutoUpdater:
                                                 # Ersetze einfachen Namen mit Version
                                                 packages = [version_info if p == pkg_name else p for p in packages]
                                     break
-                except:
-                    pass
+                except Exception:  # nosec B110 - graceful degradation for package info
+                    pass  # Continue with limited package information
         
         # Entferne Duplikate und leere Einträge
         packages = list(dict.fromkeys([p for p in packages if p]))
@@ -414,7 +414,7 @@ class RaspbianAutoUpdater:
         """
         # Prüfe ob notify-send verfügbar ist
         try:
-            subprocess.run(["which", "notify-send"], 
+            subprocess.run(["which", "notify-send"],  # nosec B603, B607 - checking for notification tool
                           capture_output=True, 
                           check=True)
         except subprocess.CalledProcessError:
@@ -451,7 +451,7 @@ class RaspbianAutoUpdater:
             # Methode 1: Suche in laufenden Prozessen
             try:
                 # Finde GUI-Prozesse des Users (z.B. gnome-session, lxsession, wayfire)
-                ps_result = subprocess.run(
+                ps_result = subprocess.run(  # nosec B603, B607 - reading user processes
                     ["ps", "-u", target_user, "-o", "pid,cmd"],
                     capture_output=True,
                     text=True,
@@ -478,10 +478,10 @@ class RaspbianAutoUpdater:
                             
                             if display and dbus_addr:
                                 break
-                    except:
-                        continue
-            except:
-                pass
+                    except Exception:  # nosec B112 - try next process
+                        continue  # Try next environment file
+            except Exception:  # nosec B110 - graceful fallback
+                pass  # Continue with fallback methods
             
             # Methode 2: Standard-Pfade für DBUS
             if not dbus_addr and user_uid:
@@ -499,9 +499,9 @@ class RaspbianAutoUpdater:
             # Methode 3: Fallback-Werte
             if not display:
                 # Prüfe ob X Server läuft
-                if os.path.exists('/tmp/.X11-unix/X0'):
+                if os.path.exists('/tmp/.X11-unix/X0'):  # nosec B108 - standard X11 socket
                     display = ":0"
-                elif os.path.exists('/tmp/.X11-unix/X1'):
+                elif os.path.exists('/tmp/.X11-unix/X1'):  # nosec B108 - standard X11 socket
                     display = ":1"
                 else:
                     # Kein Display verfügbar - abbrechen
@@ -519,7 +519,7 @@ class RaspbianAutoUpdater:
             
             if os.environ.get('SUDO_USER'):
                 # Als SUDO_USER ausführen
-                subprocess.run(
+                subprocess.run(  # nosec B603, B607 - controlled notification command
                     ["sudo", "-u", target_user,
                      "env", f"DISPLAY={display}", 
                      f"DBUS_SESSION_BUS_ADDRESS={dbus_addr}",
@@ -534,7 +534,7 @@ class RaspbianAutoUpdater:
                 import copy
                 env = copy.copy(os.environ)
                 env.update(env_vars)
-                subprocess.run(
+                subprocess.run(  # nosec B603, B607 - controlled notification command
                     ["notify-send", "-u", urgency, "-i", icon, title, message],
                     capture_output=True,
                     check=False,

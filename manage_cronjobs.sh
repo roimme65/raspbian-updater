@@ -28,7 +28,7 @@ show_current_cronjobs() {
             echo -e "  ${BLUE}→${NC} $line"
             
             # Parse Cron-Zeit
-            cron_parts=($line)
+            read -ra cron_parts <<< "$line"
             minute="${cron_parts[0]}"
             hour="${cron_parts[1]}"
             day="${cron_parts[2]}"

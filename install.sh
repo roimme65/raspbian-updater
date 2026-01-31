@@ -102,7 +102,7 @@ EOF
     
     # Starte notification-daemon sofort (im Hintergrund)
     if ! pgrep -x notification-daemon > /dev/null; then
-        sudo -u "$SUDO_USER" DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$(id -u "$SUDO_USER")/bus \
+        sudo -u "$SUDO_USER" DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u "$SUDO_USER")/bus" \
             /usr/lib/notification-daemon/notification-daemon &
         echo "✓ notification-daemon gestartet"
     fi

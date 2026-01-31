@@ -139,8 +139,8 @@ RELEASE_NOTES_FILE="releases/v${NEW_VERSION}.md"
 
 # Funktion: Generiere automatische Release-Notes aus Git-Commits
 generate_auto_release_notes() {
-    local prev_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-    local new_version="v${NEW_VERSION}"
+    local prev_tag
+    prev_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
     
     print_info "Analysiere Commits seit letztem Release..."
     
