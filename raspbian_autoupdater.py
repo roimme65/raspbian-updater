@@ -336,6 +336,21 @@ class RaspbianAutoUpdater:
             show_output=True
         )
         
+        # Wenn dpkg unterbrochen wurde, reparieren und erneut versuchen
+        if not success and output and "dpkg-Prozess wurde unterbrochen" in output:
+            self.print_status(
+                "DPKG-Fehler erkannt. Führe Reparatur durch...",
+                UpdateStatus.RUNNING,
+                Color.WARNING
+            )
+            if self.dpkg_configure_fix():
+                # Erneuter Versuch nach Reparatur
+                success, output = self.run_command(
+                    ["apt-get", "upgrade", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
+                    "APT Upgrade - Pakete aktualisieren (Wiederholung nach DPKG-Reparatur)",
+                    show_output=True
+                )
+        
         # Extrahiere aktualisierte Pakete
         if output:
             self.upgraded_packages.extend(self.parse_package_list(output))
@@ -355,6 +370,21 @@ class RaspbianAutoUpdater:
             show_output=True
         )
         
+        # Wenn dpkg unterbrochen wurde, reparieren und erneut versuchen
+        if not success and output and "dpkg-Prozess wurde unterbrochen" in output:
+            self.print_status(
+                "DPKG-Fehler erkannt. Führe Reparatur durch...",
+                UpdateStatus.RUNNING,
+                Color.WARNING
+            )
+            if self.dpkg_configure_fix():
+                # Erneuter Versuch nach Reparatur
+                success, output = self.run_command(
+                    ["apt-get", "dist-upgrade", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
+                    "APT Dist-Upgrade - Distribution aktualisieren (Wiederholung nach DPKG-Reparatur)",
+                    show_output=True
+                )
+        
         # Extrahiere aktualisierte Pakete
         if output:
             dist_packages = self.parse_package_list(output)
@@ -373,11 +403,28 @@ class RaspbianAutoUpdater:
         Returns:
             True bei Erfolg, sonst False
         """
-        return self.run_command(
+        success, output = self.run_command(
             ["apt-get", "autoremove", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
             "APT Autoremove - Unnötige Pakete entfernen",
             show_output=True
-        )[0]
+        )
+        
+        # Wenn dpkg unterbrochen wurde, reparieren und erneut versuchen
+        if not success and output and "dpkg-Prozess wurde unterbrochen" in output:
+            self.print_status(
+                "DPKG-Fehler erkannt. Führe Reparatur durch...",
+                UpdateStatus.RUNNING,
+                Color.WARNING
+            )
+            if self.dpkg_configure_fix():
+                # Erneuter Versuch nach Reparatur
+                success, output = self.run_command(
+                    ["apt-get", "autoremove", "-y", "-q", "-o", "Dpkg::Use-Pty=0"],
+                    "APT Autoremove - Unnötige Pakete entfernen (Wiederholung nach DPKG-Reparatur)",
+                    show_output=True
+                )
+        
+        return success
     
     def apt_autoclean(self) -> bool:
         """
@@ -389,6 +436,20 @@ class RaspbianAutoUpdater:
         return self.run_command(
             ["apt-get", "autoclean", "-q"],
             "APT Autoclean - Cache bereinigen",
+            show_output=True
+        )[0]
+    
+    def dpkg_configure_fix(self) -> bool:
+        """
+        Repariert unterbrochene dpkg-Prozesse
+        Führt 'sudo dpkg --configure -a' aus
+        
+        Returns:
+            True bei Erfolg, sonst False
+        """
+        return self.run_command(
+            ["dpkg", "--configure", "-a"],
+            "DPKG Reparatur - Unterbrochene Konfiguration beheben",
             show_output=True
         )[0]
     
